@@ -604,7 +604,7 @@ static void RegisterSquirrelFunction(HSQUIRRELVM v, SQFUNCTION function, const S
 #define REGISTER_SQ_FUNCTION(function, parameterMask) \
 	RegisterSquirrelFunction(v, (function), _SC(#function), SQ_MATCHTYPEMASKSTRING, _SC("t" parameterMask))
 
-void RegisterSquirrelFunctions(HSQUIRRELVM v)
+void RegisterSQLatestFeaturesFunctions(HSQUIRRELVM v)
 {
 	REGISTER_SQ_FUNCTION(SetCrouchEnabled,         "b");
 	REGISTER_SQ_FUNCTION(GetCrouchEnabled,         "");

@@ -1,9 +1,9 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#define OUTPUT_INFO(format, ...)    OutputMessage(OUTPUT_INFO,    (format), ##__VA_ARGS__)
-#define OUTPUT_WARNING(format, ...) OutputMessage(OUTPUT_WARNING, (format), ##__VA_ARGS__)
-#define OUTPUT_ERROR(format, ...)   OutputMessage(OUTPUT_ERROR,   (format), ##__VA_ARGS__)
+#define OUTPUT_INFO(format, ...)    SQLF_OutputMessage(OUTPUT_INFO,    (format), ##__VA_ARGS__)
+#define OUTPUT_WARNING(format, ...) SQLF_OutputMessage(OUTPUT_WARNING, (format), ##__VA_ARGS__)
+#define OUTPUT_ERROR(format, ...)   SQLF_OutputMessage(OUTPUT_ERROR,   (format), ##__VA_ARGS__)
 
 typedef enum
 {
@@ -12,6 +12,6 @@ typedef enum
 	OUTPUT_ERROR
 } OutputMessageType;
 
-void OutputMessage(OutputMessageType messageType, const char* format, ...);
+void SQLF_OutputMessage(OutputMessageType messageType, const char* format, ...);
 
 #endif

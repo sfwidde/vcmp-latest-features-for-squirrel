@@ -2,6 +2,7 @@
 #include "console.h"
 #include <VCMP.h>
 #include <squirrel/SQImports.h>
+#include <stdio.h>
 #include <utils.h>
 #include <assert.h>
 #include <string.h>
@@ -10,7 +11,9 @@ PluginFuncs* vcmpFunctions;
 HSQAPI sq;
 
 /* functions.c */
-void RegisterSquirrelFunctions(HSQUIRRELVM v);
+void RegisterSQLatestFeaturesFunctions(HSQUIRRELVM v);
+
+// -----------------------------------------------------------------------------
 
 static void HookSquirrel(void)
 {
@@ -35,8 +38,16 @@ static void HookSquirrel(void)
 	// Do the hook.
 	SquirrelImports* sqImports = *(SquirrelImports**)data;
 	sq = *sqImports->GetSquirrelAPI();
-	RegisterSquirrelFunctions(*sqImports->GetSquirrelVM());
+	RegisterSQLatestFeaturesFunctions(*sqImports->GetSquirrelVM());
+}
+
+// -----------------------------------------------------------------------------
+
+static uint8_t OnServerInitialise(void)
+{
+	putchar('\n');
 	OUTPUT_INFO("Loaded " PLUGIN_NAME " module v" PLUGIN_VERSION_STR " by sfwidde ([R3V]Kelvin).");
+	return 1;
 }
 
 static uint8_t OnPluginCommand(uint32_t commandIdentifier, const char* message)
@@ -61,6 +72,7 @@ LIBRARY_EXPORT uint32_t VcmpPluginInit(PluginFuncs* pluginFuncs, PluginCallbacks
 
 	vcmpFunctions = pluginFuncs;
 
+	pluginCalls->OnServerInitialise = OnServerInitialise;
 	pluginCalls->OnPluginCommand = OnPluginCommand;
 
 	return 1;
