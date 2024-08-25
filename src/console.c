@@ -7,7 +7,7 @@
 
 void OutputMessage(OutputMessageType messageType, const char* format, ...)
 {
-	static const char* const messagePrefixes[3] =
+	static const char* messagePrefixes[3] =
 	{
 	#ifdef OS_WINDOWS
 		"[MODULE]  ",
@@ -32,7 +32,6 @@ void OutputMessage(OutputMessageType messageType, const char* format, ...)
 		fputs(messagePrefixes[messageType], stdout);
 		vprintf(format, ap);
 		putchar('\n');
-
 		va_end(ap);
 		return;
 	}
@@ -42,7 +41,7 @@ void OutputMessage(OutputMessageType messageType, const char* format, ...)
 	{
 		FOREGROUND_GREEN,                                         // Green
 		FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY, // Bright yellow
-		FOREGROUND_RED |                    FOREGROUND_INTENSITY  // Bright red
+		FOREGROUND_RED | FOREGROUND_INTENSITY                     // Bright red
 	};
 
 	SetConsoleTextAttribute(consoleHandle, messagePrefixColorAttributes[messageType]);

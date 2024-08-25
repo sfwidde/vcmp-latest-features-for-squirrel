@@ -1,13 +1,13 @@
 #include "main.h"
-#include "../squirrel/SQImports.h"
 #include "console.h"
 #include <VCMP.h>
+#include <squirrel/SQImports.h>
 #include <utils.h>
+#include <assert.h>
 #include <string.h>
 
 PluginFuncs* vcmpFunctions;
 HSQAPI sq;
-HSQUIRRELVM v;
 
 /* functions.c */
 void RegisterSquirrelFunctions(HSQUIRRELVM v);
@@ -35,10 +35,7 @@ static void HookSquirrel(void)
 	// Do the hook.
 	SquirrelImports* sqImports = *(SquirrelImports**)data;
 	sq = *sqImports->GetSquirrelAPI();
-	v = *sqImports->GetSquirrelVM();
-
-	// It is safe to register our new functions now.
-	RegisterSquirrelFunctions(v);
+	RegisterSquirrelFunctions(*sqImports->GetSquirrelVM());
 	OUTPUT_INFO("Loaded " PLUGIN_NAME " module v" PLUGIN_VERSION_STR " by sfwidde ([R3V]Kelvin).");
 }
 
@@ -56,8 +53,9 @@ static uint8_t OnPluginCommand(uint32_t commandIdentifier, const char* message)
 // https://forum.vc-mp.org/index.php?topic=13.0
 LIBRARY_EXPORT uint32_t VcmpPluginInit(PluginFuncs* pluginFuncs, PluginCallbacks* pluginCalls, PluginInfo* pluginInfo)
 {
+	assert(sizeof(PLUGIN_NAME) <= sizeof(pluginInfo->name));
 	strcpy(pluginInfo->name, PLUGIN_NAME);
-	pluginInfo->pluginVersion   = PLUGIN_VERSION_INT;
+	pluginInfo->pluginVersion = PLUGIN_VERSION_INT;
 	pluginInfo->apiMajorVersion = PLUGIN_API_MAJOR;
 	pluginInfo->apiMinorVersion = PLUGIN_API_MINOR;
 

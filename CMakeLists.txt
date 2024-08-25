@@ -3,6 +3,7 @@
 project(vcmp-latest-features-for-squirrel)
 
 set(BUILD_SHARED_LIBS ON)
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
 math(EXPR CPU_BITS "${CMAKE_SIZEOF_VOID_P} * 8")
 
 # Windows
@@ -14,12 +15,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	add_compile_definitions(WIN32_LEAN_AND_MEAN) # For files that include <Windows.h>
 # Linux
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	set(CMAKE_SHARED_LIBRARY_PREFIX "")
 	# Follow VC:MP plugin naming convention (04rel32/64.so).
 	set(CMAKE_SHARED_LIBRARY_SUFFIX "04rel${CPU_BITS}.so")
 
 	add_compile_definitions(OS_LINUX)
-	add_compile_definitions(_GNU_SOURCE)
 else()
 	message(FATAL_ERROR "${CMAKE_SYSTEM_NAME} is an unsupported operating system. Use Windows or Linux instead")
 endif()
@@ -44,6 +43,6 @@ else()
 	add_compile_definitions(DEBUG_BUILD=0)
 endif()
 
-include_directories(src/include)
+include_directories(src/include/)
 
-add_subdirectory(src/plugin)
+add_subdirectory(src/)

@@ -1,5 +1,5 @@
-#ifndef PLUGIN_CONSOLE_H
-#define PLUGIN_CONSOLE_H
+#ifndef CONSOLE_H
+#define CONSOLE_H
 
 #define OUTPUT_INFO(format, ...)    OutputMessage(OUTPUT_INFO,    (format), ##__VA_ARGS__)
 #define OUTPUT_WARNING(format, ...) OutputMessage(OUTPUT_WARNING, (format), ##__VA_ARGS__)
