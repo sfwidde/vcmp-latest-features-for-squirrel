@@ -11,7 +11,7 @@ PluginFuncs* vcmpFunctions;
 HSQAPI sq;
 
 /* functions.c */
-void RegisterSQLatestFeaturesFunctions(HSQUIRRELVM v);
+void SQLF_RegisterSquirrelFunctions(HSQUIRRELVM v);
 
 // -----------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ static void HookSquirrel(void)
 	int32_t pluginId = vcmpFunctions->FindPlugin("SQHost2");
 	if (pluginId == -1)
 	{
-		OUTPUT_ERROR("Unable to find Squirrel module. " PLUGIN_NAME " functions will be unavailable.");
+		SQLF_OUTPUT_ERROR("Unable to find Squirrel module. " SQLF_PLUGIN_NAME " functions will be unavailable.");
 		return;
 	}
 
@@ -30,15 +30,15 @@ static void HookSquirrel(void)
 	const void** data = vcmpFunctions->GetPluginExports(pluginId, &dataSize);
 	if (!data || !*data || dataSize != sizeof(SquirrelImports))
 	{
-		OUTPUT_ERROR("The Squirrel module provided an invalid SquirrelImports structure. "
-			PLUGIN_NAME " functions will be unavailable.");
+		SQLF_OUTPUT_ERROR("The Squirrel module provided an invalid SquirrelImports structure. "
+			SQLF_PLUGIN_NAME " functions will be unavailable.");
 		return;
 	}
 
 	// Do the hook.
 	SquirrelImports* sqImports = *(SquirrelImports**)data;
 	sq = *sqImports->GetSquirrelAPI();
-	RegisterSQLatestFeaturesFunctions(*sqImports->GetSquirrelVM());
+	SQLF_RegisterSquirrelFunctions(*sqImports->GetSquirrelVM());
 }
 
 // -----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ static void HookSquirrel(void)
 static uint8_t OnServerInitialise(void)
 {
 	putchar('\n');
-	OUTPUT_INFO("Loaded " PLUGIN_NAME " module v" PLUGIN_VERSION_STR " by sfwidde ([R3V]Kelvin).");
+	SQLF_OUTPUT_INFO("Loaded " SQLF_PLUGIN_NAME " v" SQLF_PLUGIN_VERSION_STR " by sfwidde ([R3V]Kelvin).");
 	return 1;
 }
 
@@ -64,9 +64,9 @@ static uint8_t OnPluginCommand(uint32_t commandIdentifier, const char* message)
 // https://forum.vc-mp.org/index.php?topic=13.0
 LIBRARY_EXPORT uint32_t VcmpPluginInit(PluginFuncs* pluginFuncs, PluginCallbacks* pluginCalls, PluginInfo* pluginInfo)
 {
-	assert(sizeof(PLUGIN_NAME) <= sizeof(pluginInfo->name));
-	strcpy(pluginInfo->name, PLUGIN_NAME);
-	pluginInfo->pluginVersion = PLUGIN_VERSION_INT;
+	assert(sizeof(SQLF_PLUGIN_NAME) <= sizeof(pluginInfo->name));
+	strcpy(pluginInfo->name, SQLF_PLUGIN_NAME);
+	pluginInfo->pluginVersion = SQLF_PLUGIN_VERSION_INT;
 	pluginInfo->apiMajorVersion = PLUGIN_API_MAJOR;
 	pluginInfo->apiMinorVersion = PLUGIN_API_MINOR;
 

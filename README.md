@@ -34,6 +34,8 @@ float lookX, float lookY, float lookZ, int interpTimeMS)`
 - `int SetPlayer3DArrowEnabled(int playerId, int playerToShowId/-1,
 bool enable)`
 - `bool IsPlayer3DArrowEnabled(int playerId, int playerToShowId)`
+- `int SetVehicleEngineEnabled(int vehicleId/-1, bool enable)`
+- `bool IsVehicleEngineEnabled(int vehicleId)`
 - `int SetVehicleBonnetOpen(int vehicleId/-1, bool enable)`
 - `bool IsVehicleBonnetOpen(int vehicleId)`
 - `int SetVehicleBootOpen(int vehicleId/-1, bool enable)`

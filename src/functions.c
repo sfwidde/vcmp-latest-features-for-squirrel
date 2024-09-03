@@ -1,9 +1,73 @@
 #include "main.h"
 #include <VCMP.h>
 #include <squirrel/SQModule.h>
+#include <stdbool.h>
 
 extern PluginFuncs* vcmpFunctions;
 extern HSQAPI sq;
+
+// -----------------------------------------------------------------------------
+
+/* Helper functions */
+
+static SQInteger SetVehicleOptionHelper(HSQUIRRELVM v, vcmpVehicleOption option, bool invertToggle)
+{
+	SQInteger vehId;
+	SQBool enable;
+	if (SQ_FAILED(sq->getinteger(v, 2, &vehId))) { return sq->throwerror(v, _SC("unable to retrieve vehicle ID"));    }
+	if (SQ_FAILED(sq->getbool(v, 3, &enable)))   { return sq->throwerror(v, _SC("unable to retrieve option toggle")); }
+
+	int32_t vehicleId = (int32_t)vehId;
+	bool toggleStatus = (invertToggle ? !enable : !!enable);
+
+	/* Specific vehicle */
+	if (vehicleId >= 0)
+	{
+		if (!vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
+		{
+			return sq->throwerror(v, _SC("no vehicle with such ID exists"));
+		}
+
+		vcmpFunctions->SetVehicleOption(vehicleId, option, toggleStatus);
+		sq->pushinteger(v, 1);
+		return 1;
+	}
+
+	/* All vehicles */
+	SQInteger count = 0;
+	for (vehicleId = 1; vehicleId <= SQLF_MAX_VEHICLES; ++vehicleId)
+	{
+		if (vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
+		{
+			vcmpFunctions->SetVehicleOption(vehicleId, option, toggleStatus);
+			++count;
+		}
+	}
+	sq->pushinteger(v, count);
+	return 1;
+}
+
+static SQInteger GetVehicleOptionHelper(HSQUIRRELVM v, vcmpVehicleOption option, bool invertToggle)
+{
+	SQInteger vehId;
+	if (SQ_FAILED(sq->getinteger(v, 2, &vehId)))
+	{
+		return sq->throwerror(v, _SC("unable to retrieve vehicle ID"));
+	}
+
+	int32_t vehicleId = (int32_t)vehId;
+	if (!vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
+	{
+		return sq->throwerror(v, _SC("no vehicle with such ID exists"));
+	}
+
+	sq->pushbool(v, invertToggle ?
+		!vcmpFunctions->GetVehicleOption(vehicleId, option) :
+		!!vcmpFunctions->GetVehicleOption(vehicleId, option));
+	return 1;
+}
+
+// -----------------------------------------------------------------------------
 
 /* Server */
 
@@ -63,7 +127,7 @@ static SQInteger KillPlayer(HSQUIRRELVM v)
 
 	/* Everyone on the server */
 	SQInteger count = 0;
-	for (playerId = 0; playerId < MAX_PLAYERS; ++playerId)
+	for (playerId = 0; playerId < SQLF_MAX_PLAYERS; ++playerId)
 	{
 		if (vcmpFunctions->IsPlayerConnected(playerId) &&
 			vcmpFunctions->IsPlayerSpawned(playerId) &&
@@ -128,7 +192,7 @@ static SQInteger SetPlayerCameraPos(HSQUIRRELVM v)
 
 	/* Everyone on the server */
 	SQInteger count = 0;
-	for (playerId = 0; playerId < MAX_PLAYERS; ++playerId)
+	for (playerId = 0; playerId < SQLF_MAX_PLAYERS; ++playerId)
 	{
 		if (!vcmpFunctions->IsPlayerConnected(playerId)) { continue; }
 
@@ -182,7 +246,7 @@ static SQInteger SetPlayerDrunkVisuals(HSQUIRRELVM v)
 
 	/* Everyone on the server */
 	SQInteger count = 0;
-	for (playerId = 0; playerId < MAX_PLAYERS; ++playerId)
+	for (playerId = 0; playerId < SQLF_MAX_PLAYERS; ++playerId)
 	{
 		if (vcmpFunctions->IsPlayerConnected(playerId))
 		{
@@ -238,7 +302,7 @@ static SQInteger SetPlayerDrunkHandling(HSQUIRRELVM v)
 
 	/* Everyone on the server */
 	SQInteger count = 0;
-	for (playerId = 0; playerId < MAX_PLAYERS; ++playerId)
+	for (playerId = 0; playerId < SQLF_MAX_PLAYERS; ++playerId)
 	{
 		if (vcmpFunctions->IsPlayerConnected(playerId))
 		{
@@ -294,7 +358,7 @@ static SQInteger SetPlayerBleeding(HSQUIRRELVM v)
 
 	/* Everyone on the server */
 	SQInteger count = 0;
-	for (playerId = 0; playerId < MAX_PLAYERS; ++playerId)
+	for (playerId = 0; playerId < SQLF_MAX_PLAYERS; ++playerId)
 	{
 		if (vcmpFunctions->IsPlayerConnected(playerId))
 		{
@@ -365,7 +429,7 @@ static SQInteger SetPlayer3DArrowEnabled(HSQUIRRELVM v)
 
 	/* Everyone on the server */
 	SQInteger count = 0;
-	for (playerToShowId = 0; playerToShowId < MAX_PLAYERS; ++playerToShowId)
+	for (playerToShowId = 0; playerToShowId < SQLF_MAX_PLAYERS; ++playerToShowId)
 	{
 		if (vcmpFunctions->IsPlayerConnected(playerToShowId) && (playerToShowId != playerId))
 		{
@@ -403,116 +467,40 @@ static SQInteger IsPlayer3DArrowEnabled(HSQUIRRELVM v)
 
 /* Vehicle */
 
-// (int, bool) -> void
+// (int, bool) -> int
+static SQInteger SetVehicleEngineEnabled(HSQUIRRELVM v)
+{
+	return SetVehicleOptionHelper(v, vcmpVehicleOptionEngineDisabled, true);
+}
+
+// (int) -> bool
+static SQInteger IsVehicleEngineEnabled(HSQUIRRELVM v)
+{
+	return GetVehicleOptionHelper(v, vcmpVehicleOptionEngineDisabled, true);
+}
+
+// (int, bool) -> int
 static SQInteger SetVehicleBonnetOpen(HSQUIRRELVM v)
 {
-	SQInteger vehId;
-	SQBool enable;
-	if (SQ_FAILED(sq->getinteger(v, 2, &vehId))) { return sq->throwerror(v, _SC("unable to retrieve vehicle ID"));    }
-	if (SQ_FAILED(sq->getbool(v, 3, &enable)))   { return sq->throwerror(v, _SC("unable to retrieve option toggle")); }
-
-	int32_t vehicleId = (int32_t)vehId;
-
-	/* Specific vehicle */
-	if (vehicleId >= 0)
-	{
-		if (!vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
-		{
-			return sq->throwerror(v, _SC("no vehicle with such ID exists"));
-		}
-
-		vcmpFunctions->SetVehicleOption(vehicleId, vcmpVehicleOptionBonnetOpen, !!enable);
-		sq->pushinteger(v, 1);
-		return 1;
-	}
-
-	/* All vehicles */
-	SQInteger count = 0;
-	for (vehicleId = 1; vehicleId <= MAX_VEHICLES; ++vehicleId)
-	{
-		if (vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
-		{
-			vcmpFunctions->SetVehicleOption(vehicleId, vcmpVehicleOptionBonnetOpen, !!enable);
-			++count;
-		}
-	}
-	sq->pushinteger(v, count);
-	return 1;
+	return SetVehicleOptionHelper(v, vcmpVehicleOptionBonnetOpen, false);
 }
 
 // (int) -> bool
 static SQInteger IsVehicleBonnetOpen(HSQUIRRELVM v)
 {
-	SQInteger vehId;
-	if (SQ_FAILED(sq->getinteger(v, 2, &vehId)))
-	{
-		return sq->throwerror(v, _SC("unable to retrieve vehicle ID"));
-	}
-
-	int32_t vehicleId = (int32_t)vehId;
-	if (!vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
-	{
-		return sq->throwerror(v, _SC("no vehicle with such ID exists"));
-	}
-
-	sq->pushbool(v, !!vcmpFunctions->GetVehicleOption(vehicleId, vcmpVehicleOptionBonnetOpen));
-	return 1;
+	return GetVehicleOptionHelper(v, vcmpVehicleOptionBonnetOpen, false);
 }
 
-// (int, bool) -> void
+// (int, bool) -> int
 static SQInteger SetVehicleBootOpen(HSQUIRRELVM v)
 {
-	SQInteger vehId;
-	SQBool enable;
-	if (SQ_FAILED(sq->getinteger(v, 2, &vehId))) { return sq->throwerror(v, _SC("unable to retrieve vehicle ID"));    }
-	if (SQ_FAILED(sq->getbool(v, 3, &enable)))   { return sq->throwerror(v, _SC("unable to retrieve option toggle")); }
-
-	int32_t vehicleId = (int32_t)vehId;
-
-	/* Specific vehicle */
-	if (vehicleId >= 0)
-	{
-		if (!vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
-		{
-			return sq->throwerror(v, _SC("no vehicle with such ID exists"));
-		}
-
-		vcmpFunctions->SetVehicleOption(vehicleId, vcmpVehicleOptionBootOpen, !!enable);
-		sq->pushinteger(v, 1);
-		return 1;
-	}
-
-	/* All vehicles */
-	SQInteger count = 0;
-	for (vehicleId = 1; vehicleId <= MAX_VEHICLES; ++vehicleId)
-	{
-		if (vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
-		{
-			vcmpFunctions->SetVehicleOption(vehicleId, vcmpVehicleOptionBootOpen, !!enable);
-			++count;
-		}
-	}
-	sq->pushinteger(v, count);
-	return 1;
+	return SetVehicleOptionHelper(v, vcmpVehicleOptionBootOpen, false);
 }
 
 // (int) -> bool
 static SQInteger IsVehicleBootOpen(HSQUIRRELVM v)
 {
-	SQInteger vehId;
-	if (SQ_FAILED(sq->getinteger(v, 2, &vehId)))
-	{
-		return sq->throwerror(v, _SC("unable to retrieve vehicle ID"));
-	}
-
-	int32_t vehicleId = (int32_t)vehId;
-	if (!vcmpFunctions->CheckEntityExists(vcmpEntityPoolVehicle, vehicleId))
-	{
-		return sq->throwerror(v, _SC("no vehicle with such ID exists"));
-	}
-
-	sq->pushbool(v, !!vcmpFunctions->GetVehicleOption(vehicleId, vcmpVehicleOptionBootOpen));
-	return 1;
+	return GetVehicleOptionHelper(v, vcmpVehicleOptionBootOpen, false);
 }
 
 // (int, int, bool) -> int
@@ -548,7 +536,7 @@ static SQInteger SetVehicle3DArrowEnabled(HSQUIRRELVM v)
 
 	/* Everyone on the server */
 	SQInteger count = 0;
-	for (playerToShowId = 0; playerToShowId < MAX_PLAYERS; ++playerToShowId)
+	for (playerToShowId = 0; playerToShowId < SQLF_MAX_PLAYERS; ++playerToShowId)
 	{
 		if (vcmpFunctions->IsPlayerConnected(playerToShowId))
 		{
@@ -604,7 +592,7 @@ static void RegisterSquirrelFunction(HSQUIRRELVM v, SQFUNCTION function, const S
 #define REGISTER_SQ_FUNCTION(function, parameterMask) \
 	RegisterSquirrelFunction(v, (function), _SC(#function), SQ_MATCHTYPEMASKSTRING, _SC("t" parameterMask))
 
-void RegisterSQLatestFeaturesFunctions(HSQUIRRELVM v)
+void SQLF_RegisterSquirrelFunctions(HSQUIRRELVM v)
 {
 	REGISTER_SQ_FUNCTION(SetCrouchEnabled,         "b");
 	REGISTER_SQ_FUNCTION(GetCrouchEnabled,         "");
@@ -618,6 +606,8 @@ void RegisterSQLatestFeaturesFunctions(HSQUIRRELVM v)
 	REGISTER_SQ_FUNCTION(IsPlayerBleeding,         "i");
 	REGISTER_SQ_FUNCTION(SetPlayer3DArrowEnabled,  "iib");
 	REGISTER_SQ_FUNCTION(IsPlayer3DArrowEnabled,   "ii");
+	REGISTER_SQ_FUNCTION(SetVehicleEngineEnabled,  "ib");
+	REGISTER_SQ_FUNCTION(IsVehicleEngineEnabled,   "i");
 	REGISTER_SQ_FUNCTION(SetVehicleBonnetOpen,     "ib");
 	REGISTER_SQ_FUNCTION(IsVehicleBonnetOpen,      "i");
 	REGISTER_SQ_FUNCTION(SetVehicleBootOpen,       "ib");

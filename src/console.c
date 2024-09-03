@@ -5,7 +5,7 @@
 #endif
 #include <stdio.h>
 
-void SQLF_OutputMessage(OutputMessageType messageType, const char* format, ...)
+void SQLF_OutputMessage(SQLF_OutputMessageType messageType, const char* format, ...)
 {
 	static const char* messagePrefixes[3] =
 	{
