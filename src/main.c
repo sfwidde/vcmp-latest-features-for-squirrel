@@ -1,3 +1,9 @@
+/*
+ * Latest Vice City: Multiplayer (VC:MP) 0.4 features for Squirrel
+ * Author: sfwidde ([SS]Kelvin)
+ * 2024-07-07
+ */
+
 #include "main.h"
 #include "console.h"
 #include <VCMP.h>
@@ -11,34 +17,34 @@ PluginFuncs* vcmpFunctions;
 HSQAPI sq;
 
 /* functions.c */
-void SQLF_RegisterSquirrelFunctions(HSQUIRRELVM v);
+void SQLF_RegisterNewSquirrelDefinitions(HSQUIRRELVM v);
 
 // -----------------------------------------------------------------------------
 
 static void HookSquirrel(void)
 {
-	// Attempt to find Squirrel plugin.
+	// Attempt to find Squirrel plugin
 	int32_t pluginId = vcmpFunctions->FindPlugin("SQHost2");
 	if (pluginId == -1)
 	{
-		SQLF_OUTPUT_ERROR("Unable to find Squirrel module. " SQLF_PLUGIN_NAME " functions will be unavailable.");
+		OUTPUT_WARNING("Unable to find Squirrel module. " PLUGIN_NAME " definitions will be unavailable.");
 		return;
 	}
 
-	// Attempt to retrieve exports data.
+	// Attempt to retrieve exports data
 	size_t dataSize;
 	const void** data = vcmpFunctions->GetPluginExports(pluginId, &dataSize);
 	if (!data || !*data || dataSize != sizeof(SquirrelImports))
 	{
-		SQLF_OUTPUT_ERROR("The Squirrel module provided an invalid SquirrelImports structure. "
-			SQLF_PLUGIN_NAME " functions will be unavailable.");
+		OUTPUT_WARNING("The Squirrel module provided an invalid SquirrelImports structure. "
+			PLUGIN_NAME " definitions will be unavailable.");
 		return;
 	}
 
-	// Do the hook.
+	// Do the hook
 	SquirrelImports* sqImports = *(SquirrelImports**)data;
 	sq = *sqImports->GetSquirrelAPI();
-	SQLF_RegisterSquirrelFunctions(*sqImports->GetSquirrelVM());
+	SQLF_RegisterNewSquirrelDefinitions(*sqImports->GetSquirrelVM());
 }
 
 // -----------------------------------------------------------------------------
@@ -46,7 +52,7 @@ static void HookSquirrel(void)
 static uint8_t OnServerInitialise(void)
 {
 	putchar('\n');
-	SQLF_OUTPUT_INFO("Loaded " SQLF_PLUGIN_NAME " v" SQLF_PLUGIN_VERSION_STR " by sfwidde ([R3V]Kelvin).");
+	OUTPUT_INFO("Loaded " PLUGIN_NAME " v" PLUGIN_VERSION_STR " by sfwidde ([SS]Kelvin).");
 	return 1;
 }
 
@@ -61,12 +67,14 @@ static uint8_t OnPluginCommand(uint32_t commandIdentifier, const char* message)
 	}
 }
 
+// -----------------------------------------------------------------------------
+
 // https://forum.vc-mp.org/index.php?topic=13.0
 LIBRARY_EXPORT uint32_t VcmpPluginInit(PluginFuncs* pluginFuncs, PluginCallbacks* pluginCalls, PluginInfo* pluginInfo)
 {
-	assert(sizeof(SQLF_PLUGIN_NAME) <= sizeof(pluginInfo->name));
-	strcpy(pluginInfo->name, SQLF_PLUGIN_NAME);
-	pluginInfo->pluginVersion = SQLF_PLUGIN_VERSION_INT;
+	assert(sizeof(PLUGIN_NAME) <= sizeof(pluginInfo->name));
+	strcpy(pluginInfo->name, PLUGIN_NAME);
+	pluginInfo->pluginVersion = PLUGIN_VERSION_INT;
 	pluginInfo->apiMajorVersion = PLUGIN_API_MAJOR;
 	pluginInfo->apiMinorVersion = PLUGIN_API_MINOR;
 

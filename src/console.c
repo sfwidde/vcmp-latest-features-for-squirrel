@@ -1,3 +1,9 @@
+/*
+ * Latest Vice City: Multiplayer (VC:MP) 0.4 features for Squirrel
+ * Author: sfwidde ([SS]Kelvin)
+ * 2024-07-07
+ */
+
 #include "console.h"
 #include <stdarg.h>
 #ifdef OS_WINDOWS
@@ -5,8 +11,10 @@
 #endif
 #include <stdio.h>
 
-void SQLF_OutputMessage(SQLF_OutputMessageType messageType, const char* format, ...)
+void SQLF_OutputMessage(OutputMessageType messageType, const char* format, ...)
 {
+	// https://bitbucket.org/stormeus/0.4-squirrel/src/master/ConsoleUtils.cpp
+	// Trailing spaces added for consistency with the implementation from the above link
 	static const char* messagePrefixes[3] =
 	{
 	#ifdef OS_WINDOWS
@@ -24,11 +32,15 @@ void SQLF_OutputMessage(SQLF_OutputMessageType messageType, const char* format, 
 	va_start(ap, format);
 
 #ifdef OS_WINDOWS
-	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE); // Handle to the standard output device (the console)
+	CONSOLE_SCREEN_BUFFER_INFO csbi; // Console's current screen buffer info
+	// Did we fail to retrieve either of them?
 	if (!consoleHandle || consoleHandle == INVALID_HANDLE_VALUE ||
 		!GetConsoleScreenBufferInfo(consoleHandle, &csbi))
 	{
+		// What we needed these for is for cosmetic purposes only
+		// so just output what we need to output anyway
+
 		fputs(messagePrefixes[messageType], stdout);
 		vprintf(format, ap);
 		putchar('\n');
@@ -44,12 +56,13 @@ void SQLF_OutputMessage(SQLF_OutputMessageType messageType, const char* format, 
 		FOREGROUND_RED | FOREGROUND_INTENSITY                     // Bright red
 	};
 
+	// Color message prefix accordingly
 	SetConsoleTextAttribute(consoleHandle, messagePrefixColorAttributes[messageType]);
 	fputs(messagePrefixes[messageType], stdout);
-
+	// Official VC:MP plugins' console messages are completely white for Windows builds so we follow this convention too
 	SetConsoleTextAttribute(consoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 	vprintf(format, ap);
-
+	// Reset console's color to its initial state for any future messages not related with this plugin
 	SetConsoleTextAttribute(consoleHandle, csbi.wAttributes);
 	putchar('\n');
 #else
