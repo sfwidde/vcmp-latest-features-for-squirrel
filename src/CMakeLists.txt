@@ -5,8 +5,8 @@
 add_library(
 	sqlatestfeatures
 
-	main.c
-	console.c
-	functions.c
-	sqhook.c
+	main.cpp
+	console.cpp
+	functions.cpp
+	sqhook.cpp
 )

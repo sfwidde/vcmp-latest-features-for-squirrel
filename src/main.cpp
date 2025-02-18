@@ -4,24 +4,26 @@
  * 2024-07-07
  */
 
-#include "main.h"
-#include "console.h"
+#include "main.hpp"
+#include "console.hpp"
 #include <VCMP.h>
 #include <squirrel/SQImports.h>
 #include <stdio.h>
-#include <utils.h>
+#include <utils.hpp>
 #include <assert.h>
 #include <string.h>
 
 PluginFuncs* vcmpFunctions;
 HSQAPI sq;
 
-/* functions.c */
-void SQLF_RegisterNewSquirrelDefinitions(HSQUIRRELVM v);
+// -----------------------------------------------------------------------------
+
+/* functions.cpp */
+void RegisterNewSquirrelDefinitions(HSQUIRRELVM v);
 
 // -----------------------------------------------------------------------------
 
-static void HookSquirrel(void)
+static void HookSquirrel()
 {
 	// Attempt to find Squirrel plugin
 	int32_t pluginId = vcmpFunctions->FindPlugin("SQHost2");
@@ -44,12 +46,12 @@ static void HookSquirrel(void)
 	// Do the hook
 	SquirrelImports* sqImports = *(SquirrelImports**)data;
 	sq = *sqImports->GetSquirrelAPI();
-	SQLF_RegisterNewSquirrelDefinitions(*sqImports->GetSquirrelVM());
+	RegisterNewSquirrelDefinitions(*sqImports->GetSquirrelVM());
 }
 
 // -----------------------------------------------------------------------------
 
-static uint8_t OnServerInitialise(void)
+static uint8_t OnServerInitialise()
 {
 	putchar('\n');
 	OUTPUT_INFO("Loaded " PLUGIN_NAME " v" PLUGIN_VERSION_STR " by sfwidde ([SS]Kelvin).");
@@ -67,21 +69,26 @@ static uint8_t OnPluginCommand(uint32_t commandIdentifier, const char* message)
 	}
 }
 
-// -----------------------------------------------------------------------------
-
 // https://forum.vc-mp.org/index.php?topic=13.0
+BEGIN_C_LINKAGE
 LIBRARY_EXPORT uint32_t VcmpPluginInit(PluginFuncs* pluginFuncs, PluginCallbacks* pluginCalls, PluginInfo* pluginInfo)
 {
+	// Set up plugin info
 	assert(sizeof(PLUGIN_NAME) <= sizeof(pluginInfo->name));
 	strcpy(pluginInfo->name, PLUGIN_NAME);
 	pluginInfo->pluginVersion = PLUGIN_VERSION_INT;
 	pluginInfo->apiMajorVersion = PLUGIN_API_MAJOR;
 	pluginInfo->apiMinorVersion = PLUGIN_API_MINOR;
 
+	// VC:MP functions are now accessible to us
 	vcmpFunctions = pluginFuncs;
 
+	// Set up plugin callbacks
 	pluginCalls->OnServerInitialise = OnServerInitialise;
 	pluginCalls->OnPluginCommand = OnPluginCommand;
 
 	return 1;
 }
+END_C_LINKAGE
+
+// -----------------------------------------------------------------------------

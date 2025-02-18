@@ -4,18 +4,18 @@
  * 2024-07-07
  */
 
-#include "console.h"
+#include "console.hpp"
 #include <stdarg.h>
 #ifdef OS_WINDOWS
-#include <Windows.h>
+#include <windows.h>
 #endif
 #include <stdio.h>
 
-void SQLF_OutputMessage(OutputMessageType messageType, const char* format, ...)
+void OutputMessage(OutputMessageType messageType, const char* format, ...)
 {
 	// https://bitbucket.org/stormeus/0.4-squirrel/src/master/ConsoleUtils.cpp
 	// Trailing spaces added for consistency with the implementation from the above link
-	static const char* messagePrefixes[3] =
+	static constexpr const char* messagePrefixes[3] =
 	{
 	#ifdef OS_WINDOWS
 		"[MODULE]  ",
@@ -28,6 +28,7 @@ void SQLF_OutputMessage(OutputMessageType messageType, const char* format, ...)
 	#endif
 	};
 
+	// Set up variadic arguments
 	va_list ap;
 	va_start(ap, format);
 
@@ -40,16 +41,16 @@ void SQLF_OutputMessage(OutputMessageType messageType, const char* format, ...)
 	{
 		// What we needed these for is for cosmetic purposes only
 		// so just output what we need to output anyway
-
 		fputs(messagePrefixes[messageType], stdout);
 		vprintf(format, ap);
 		putchar('\n');
+		// Cleanup
 		va_end(ap);
 		return;
 	}
 
 	// https://learn.microsoft.com/en-us/windows/console/console-screen-buffers#character-attributes
-	static const WORD messagePrefixColorAttributes[3] =
+	static constexpr WORD messagePrefixColorAttributes[3] =
 	{
 		FOREGROUND_GREEN,                                         // Green
 		FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY, // Bright yellow
@@ -62,12 +63,12 @@ void SQLF_OutputMessage(OutputMessageType messageType, const char* format, ...)
 	// Official VC:MP plugins' console messages are completely white for Windows builds so we follow this convention too
 	SetConsoleTextAttribute(consoleHandle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 	vprintf(format, ap);
-	// Reset console's color to its initial state for any future messages not related with this plugin
+	// Reset console's color to its initial state for any future messages not related to this plugin
 	SetConsoleTextAttribute(consoleHandle, csbi.wAttributes);
 	putchar('\n');
 #else
 	// https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
-	static const int messagePrefixColorCodes[3] =
+	static constexpr int messagePrefixColorCodes[3] =
 	{
 		32, // Green
 		93, // Bright yellow
@@ -79,5 +80,6 @@ void SQLF_OutputMessage(OutputMessageType messageType, const char* format, ...)
 	putchar('\n');
 #endif
 
+	// Cleanup
 	va_end(ap);
 }

@@ -2,11 +2,11 @@
 ![](https://imgur.com/RLaNR8v.png)
 
 With VC:MP's latest update (v0.4.7), there are new functionalities that were
-added to the server through the new plugin SDK. Unfortunately, official Squirrel
-module has not been updated in a while (6 years!), making these features
-inaccessible for Squirrel server developers. So, as a temporary solution to this
-problem, I've decided to make this plugin so that they can enjoy from these
-features on their servers too!
+added to the server through the new plugin SDK. Unfortunately, the official
+Squirrel module has not been updated in a while (6 years!), making these
+features inaccessible for Squirrel server developers. So, as a temporary
+solution to this problem, I've decided to make this plugin so that they can
+enjoy from these features on their servers too!
 
 ## Installation steps
 1. Head to the [**Releases** page](https://github.com/sfwidde/vcmp-latest-features-for-squirrel/releases/latest),
@@ -45,13 +45,12 @@ This plugin adds the following Squirrel-specific definitions:
 If you are not familiarized with C/C++ programming languages, `void` type must
 be unknown to you. In the context of a function's parameter list, this means
 that the function takes no parameters. In the context of a function's return
-value, this means that the function returns nothing; or, in other words,
-`null`.
+value, this means that the function returns nothing, or, in other words, `null`.
 
-Player method `SetCameraPos()` already exists by default in the official
-Squirrel module, the only difference that you will find is that this plugin adds
-a new (but optional) third parameter (`interpTimeMS`) to it, which, in case it
-is not omitted and does not equal to zero, will internally call the new
+`Player.SetCameraPos()` already exists by default in the official Squirrel
+module; the only difference that you will find is that this plugin adds a new
+(but optional) third parameter `interpTimeMS` to it, which, in case it is not
+omitted and does not equal to zero, will internally call the new
 `InterpolateCameraLookAt()` SDK function.
 
 ## Examples
@@ -77,7 +76,8 @@ player.SetCameraPos(cameraPos, cameraLook, 2000 /* (new!) */);
 </details>
 
 <details>
-<summary>Enable 3D arrow for vehicle with ID 1 for all players</summary>
+<summary>Enable 3D arrow for vehicle with ID 1, which is visible
+to all players</summary>
 
 ```
 function onPlayerSpawn(player)
@@ -86,10 +86,13 @@ function onPlayerSpawn(player)
 	// Make sure this vehicle exists
 	if (vehicle)
 	{
+		// (Check below is not actually needed here but we will
+		// perform it anyway for the sake of this example)
+		//
 		// Player does not have 3D arrow enabled for this vehicle
 		if (!vehicle.Get3DArrowForPlayer(player))
 		{
-			// Enable it!
+			// Enable it now!
 			vehicle.Set3DArrowForPlayer(player, true);
 		}
 	}
