@@ -6,7 +6,7 @@
 
 /*
 	Utilities that will help us hook the official Squirrel module
- */
+*/
 
 #ifndef SQHOOK_HPP
 #define SQHOOK_HPP
@@ -14,13 +14,11 @@
 #include <squirrel/squirrel.h>
 #include <utils.hpp>
 
-// -----------------------------------------------------------------------------
-
 /*
 	Refer to
 	https://bitbucket.org/stormeus/0.4-squirrel/src/master/
 	for the definitions below
- */
+*/
 
 /* UtilStructs.cpp, CPlayer.cpp, CVehicle.cpp */
 #define SQID_VECTOR       _SC("Vector")
@@ -39,9 +37,6 @@ struct Vector
 	float z; // 4
 };
 
-/* UtilStructs.h */
-//typedef Vector EntityVector; // Inherits from Vector
-
 /* CPlayer.h */
 struct CPlayer
 {
@@ -59,29 +54,31 @@ struct CVehicle
 #pragma pack(pop)
 
 // -----------------------------------------------------------------------------
+// SQClassHook CLASS
+// -----------------------------------------------------------------------------
 
 class SQClassHook
 {
-	// Coulda just added a new method but meh this made more sense to me
-	friend bool IsSquirrelObjectInstanceOfClass(SQInteger, const SQClassHook&);
-
 private:
-	HSQUIRRELVM v;
-
-	void AddSqratProperty(SQFUNCTION function, const SQChar* propertyName, const SQChar* sqratTableName) const;
+	// Whether this object succeeded at retrieving the class
+	// from Squirrel's root table, i.e. the class exists
+	bool m_valid;
 
 public:
-	SQClassHook(HSQUIRRELVM v, const SQChar* className);
+	SQClassHook(const SQChar* className);
 	~SQClassHook();
 
 	void AddMethod(SQFUNCTION function, const SQChar* methodName, const SQChar* parameterMask, SQInteger parameterCount = SQ_MATCHTYPEMASKSTRING) const;
+private:
+	void AddSqratProperty(SQFUNCTION function, const SQChar* propertyName, const SQChar* sqratTableName) const;
+public:
 	void AddSqratProperty(SQFUNCTION setterFunction, SQFUNCTION getterFunction, const SQChar* propertyName) const;
+	bool IsObjectInstanceOfThis(SQInteger objectIndex) const;
 };
 
-void RegisterSquirrelFunction(HSQUIRRELVM v, SQFUNCTION function, const SQChar* functionName,
-	const SQChar* parameterMask, SQInteger parameterCount = SQ_MATCHTYPEMASKSTRING);
-bool IsSquirrelObjectInstanceOfClass(SQInteger objectIndex, const SQClassHook& sqClass);
-
 // -----------------------------------------------------------------------------
+
+void RegisterSquirrelFunction(SQFUNCTION function, const SQChar* functionName,
+	const SQChar* parameterMask, SQInteger parameterCount = SQ_MATCHTYPEMASKSTRING);
 
 #endif

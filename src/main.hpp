@@ -9,7 +9,7 @@
 
 /* Plugin info */
 #define PLUGIN_NAME        "SQLatestFeatures"
-#define PLUGIN_VERSION_INT 201
-#define PLUGIN_VERSION_STR "2.0.1"
+#define PLUGIN_VERSION_INT 202
+#define PLUGIN_VERSION_STR "2.0.2"
 
 #endif

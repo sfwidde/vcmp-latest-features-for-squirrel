@@ -2,15 +2,15 @@
 ![](https://imgur.com/RLaNR8v.png)
 
 With VC:MP's latest update (v0.4.7), there are new functionalities that were
-added to the server through the new plugin SDK. Unfortunately, the official
-Squirrel module has not been updated in a while (6 years!), making these
-features inaccessible for Squirrel server developers. So, as a temporary
-solution to this problem, I've decided to make this plugin so that they can
-enjoy from these features on their servers too!
+added to the server through the new plugin SDK. Unfortunately, official Squirrel
+module has not been updated in a while (6 years!), making these features
+inaccessible for Squirrel server developers. So, as a temporary solution to this
+problem, I've decided to make this plugin so that they can enjoy from these
+features on their servers too!
 
 ## Installation steps
-1. Head to the [**Releases** page](https://github.com/sfwidde/vcmp-latest-features-for-squirrel/releases/latest),
-choose a plugin based on your needs, then download it.
+1. Head to the [**Releases**](https://github.com/sfwidde/vcmp-latest-features-for-squirrel/releases/latest)
+page, choose a plugin based on your needs, then download it.
 2. Load the plugin by appending its name to the `plugins` line in your server's
 `server.cfg`.
 
@@ -28,7 +28,7 @@ This plugin adds the following Squirrel-specific definitions:
 - (int) `Player.DrunkHandling`
 #### Methods
 - `void Player.Kill(void)`
-- `void Player.SetCameraPos(Vector cameraPos, Vector cameraLook[, int interpTimeMS])`
+- `void Player.SetCameraPos(Vector cameraPos, Vector cameraLook[, int interpTimeMS = 0])`
 - `void Player.Set3DArrowForPlayer(Player playerToShow, bool enable)`
 - `bool Player.Get3DArrowForPlayer(Player playerToShow)`
 
@@ -48,7 +48,7 @@ that the function takes no parameters. In the context of a function's return
 value, this means that the function returns nothing, or, in other words, `null`.
 
 `Player.SetCameraPos()` already exists by default in the official Squirrel
-module; the only difference that you will find is that this plugin adds a new
+module, the only difference that you will find is that this plugin adds a new
 (but optional) third parameter `interpTimeMS` to it, which, in case it is not
 omitted and does not equal to zero, will internally call the new
 `InterpolateCameraLookAt()` SDK function.

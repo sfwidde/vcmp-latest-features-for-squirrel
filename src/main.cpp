@@ -14,14 +14,18 @@
 #include <string.h>
 
 PluginFuncs* vcmpFunctions;
-HSQAPI sq;
-
-// -----------------------------------------------------------------------------
+HSQAPI       sq;
+HSQUIRRELVM  v;
 
 /* functions.cpp */
-void RegisterNewSquirrelDefinitions(HSQUIRRELVM v);
+void RegisterNewSquirrelDefinitions();
 
-// -----------------------------------------------------------------------------
+static uint8_t OnServerInitialise()
+{
+	putchar('\n');
+	OUTPUT_INFO("Loaded " PLUGIN_NAME " v" PLUGIN_VERSION_STR " by sfwidde ([SS]Kelvin).");
+	return 1;
+}
 
 static void HookSquirrel()
 {
@@ -46,16 +50,9 @@ static void HookSquirrel()
 	// Do the hook
 	SquirrelImports* sqImports = *(SquirrelImports**)data;
 	sq = *sqImports->GetSquirrelAPI();
-	RegisterNewSquirrelDefinitions(*sqImports->GetSquirrelVM());
-}
-
-// -----------------------------------------------------------------------------
-
-static uint8_t OnServerInitialise()
-{
-	putchar('\n');
-	OUTPUT_INFO("Loaded " PLUGIN_NAME " v" PLUGIN_VERSION_STR " by sfwidde ([SS]Kelvin).");
-	return 1;
+	v = *sqImports->GetSquirrelVM();
+	// Install our custom functionality
+	RegisterNewSquirrelDefinitions();
 }
 
 static uint8_t OnPluginCommand(uint32_t commandIdentifier, const char* message)
@@ -70,7 +67,7 @@ static uint8_t OnPluginCommand(uint32_t commandIdentifier, const char* message)
 }
 
 // https://forum.vc-mp.org/index.php?topic=13.0
-BEGIN_C_LINKAGE
+C_LINKAGE_BEGIN
 LIBRARY_EXPORT uint32_t VcmpPluginInit(PluginFuncs* pluginFuncs, PluginCallbacks* pluginCalls, PluginInfo* pluginInfo)
 {
 	// Set up plugin info
@@ -89,6 +86,4 @@ LIBRARY_EXPORT uint32_t VcmpPluginInit(PluginFuncs* pluginFuncs, PluginCallbacks
 
 	return 1;
 }
-END_C_LINKAGE
-
-// -----------------------------------------------------------------------------
+C_LINKAGE_END
